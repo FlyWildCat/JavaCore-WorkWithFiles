@@ -5,12 +5,16 @@ import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,22 +25,59 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        final String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
+        String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
         String inCsv = "data.csv";
         String inXml = "data.xml";
+        String inJson = "data.json";
         String outOnCsv = "dataOnCsv.json";
         String outOnXml = "dataOnXml.json";
 
         List<Employee> listCSV = parseCSV(columnMapping, inCsv);
-
         List<Employee> listXML = parseXML(inXml);
 
         String csvJson = listToJson(listCSV);
         writeString(csvJson,outOnCsv);
+        System.out.println("Данные из файла: " + inCsv + " записаны в файл: " + outOnCsv);
 
         String xmlJson = listToJson(listXML);
         writeString(xmlJson, outOnXml);
+        System.out.println("Данные из файла: " + inXml + " записаны в файл: " + outOnXml);
 
+        String json = readString(inJson);
+        List<Employee> list = jsonToList(json);
+        System.out.println("Данные из файла: " + inJson + " записаны в список:");
+        for (Employee e : list) {
+            System.out.println(e);
+        }
+
+    }
+
+    private static List<Employee> jsonToList(String json) {
+        List<Employee> employees = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        Gson gson = gsonBuilder.create();
+        try {
+            JSONArray jsonArray = (JSONArray) parser.parse(json);
+            for (Object s : jsonArray) {
+                Employee employee = gson.fromJson(String.valueOf(s), Employee.class);
+                employees.add(employee);
+            }
+            return employees;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static String readString(String inJson) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(inJson))) {
+            return reader.readLine();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static List<Employee> parseXML(String inXml) {
