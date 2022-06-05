@@ -5,26 +5,84 @@ import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
 
-        String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
-        String inFileName = "data.csv";
-        String outFileName = "data.json";
+        final String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
+        String inCsv = "data.csv";
+        String inXml = "data.xml";
+        String outOnCsv = "dataOnCsv.json";
+        String outOnXml = "dataOnXml.json";
 
-        List<Employee> list = parseCSV(columnMapping, inFileName);
+        List<Employee> listCSV = parseCSV(columnMapping, inCsv);
 
-        String json = listToJson(list);
-        
-        writeString(json,outFileName);
+        List<Employee> listXML = parseXML(inXml);
 
+        String csvJson = listToJson(listCSV);
+        writeString(csvJson,outOnCsv);
+
+        String xmlJson = listToJson(listXML);
+        writeString(xmlJson, outOnXml);
+
+    }
+
+    private static List<Employee> parseXML(String inXml) {
+        List<Employee> employees = new ArrayList<>();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(inXml);
+            NodeList nl = doc.getElementsByTagName("employee");
+            for (int i = 0; i < nl.getLength(); i++) {
+                employees.add(read(nl.item(i).getChildNodes()));
+            }
+            return employees;
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Employee read(NodeList nl) {
+        Employee employee = new Employee();
+         for (int j = 0; j < nl.getLength(); j++) {
+             Node cn = nl.item(j);
+             if (Node.ELEMENT_NODE == cn.getNodeType()) {
+                 String scn = cn.getTextContent();
+                 String name = cn.getNodeName();
+                 switch (name) {
+                     case "id": {
+                         employee.id = Long.parseLong(scn);
+                     } break;
+                     case "firstName": {
+                         employee.firstName = scn;
+                     } break;
+                     case "lastName": {
+                         employee.lastName = scn;
+                     } break;
+                     case "country": {
+                         employee.country = scn;
+                     } break;
+                     case "age": {
+                         employee.age = Integer.parseInt(scn);
+                     } break;
+                 }
+             }
+         }
+         return employee;
     }
 
     private static String listToJson(List<Employee> list) {
