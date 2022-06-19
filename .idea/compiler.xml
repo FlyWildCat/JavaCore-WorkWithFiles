@@ -9,5 +9,8 @@
         <module name="csvToJson" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="csvToJson" target="8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

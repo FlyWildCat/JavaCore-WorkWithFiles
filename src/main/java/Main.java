@@ -52,7 +52,7 @@ public class Main {
 
     }
 
-    private static List<Employee> jsonToList(String json) {
+    public static List<Employee> jsonToList(String json) {
         List<Employee> employees = new ArrayList<>();
         JSONParser parser = new JSONParser();
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -70,7 +70,7 @@ public class Main {
         return null;
     }
 
-    private static String readString(String inJson) {
+    public static String readString(String inJson) {
         try (BufferedReader reader = new BufferedReader(new FileReader(inJson))) {
             return reader.readLine();
         }
@@ -126,7 +126,7 @@ public class Main {
          return employee;
     }
 
-    private static String listToJson(List<Employee> list) {
+    public static String listToJson(List<Employee> list) {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         Type listType = new TypeToken<List<Employee>>() {}.getType();
@@ -160,4 +160,5 @@ public class Main {
             e.printStackTrace();
         }
     }
+
 }
